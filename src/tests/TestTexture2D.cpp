@@ -13,15 +13,23 @@ namespace test {
 		m_TranslationA(-400, 0, 0), m_TranslationB(400, 0, 0)
 	{
 		float positions[] = {
-			600.0f,		250.0f,		0.0f, 0.0f, // 0
-			1000.0f,	250.0f,		1.0f, 0.0f, // 1
-			1000.0f,	650.0f,		1.0f, 1.0f, // 2
-			600.0f,		650.0f,		0.0f, 1.0f, // 3
+			600.0f,	 250.0f, 0.0f, 0.0f, // 0
+			1000.0f, 250.0f, 1.0f, 0.0f, // 1
+			1000.0f, 650.0f, 1.0f, 1.0f, // 2
+			600.0f,	 650.0f, 0.0f, 1.0f, // 3
+
+			1200.0f, 250.0f, 0.0f, 0.0f, // 4
+			1600.0f, 250.0f, 1.0f, 0.0f, // 5
+			1600.0f, 650.0f, 1.0f, 1.0f, // 6
+			1200.0f, 650.0f, 0.0f, 1.0f, // 7
 		};
 
 		unsigned int indices[]{
 			0, 1, 2,
 			2, 3, 0,
+
+			4, 5, 6,
+			6, 7, 4
 		};
 
 		GLCall(glEnable(GL_BLEND));
@@ -29,13 +37,13 @@ namespace test {
 
 		m_VAO = std::make_unique<VertexArray>();
 
-		m_VertexBuffer = std::make_unique<VertexBuffer>(positions, 4 * 4 * sizeof(float));
+		m_VertexBuffer = std::make_unique<VertexBuffer>(positions, 4 * 8 * sizeof(float));
 		VertexBufferLayout layout;
 		layout.Push<float>(2);
 		layout.Push<float>(2);
 		m_VAO->AddBuffer(*m_VertexBuffer, layout);
 
-		m_IndexBuffer = std::make_unique<IndexBuffer>(indices, 6);
+		m_IndexBuffer = std::make_unique<IndexBuffer>(indices, 12);
 
 		m_Shader = std::make_unique<Shader>("res/shaders/Basic.shader");
 		m_Shader->Bind();
