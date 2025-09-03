@@ -19,6 +19,12 @@ out/
 *.VC.db
 *.VC.opendb
 
+# Visual C++ cache files
+ipch/
+*.aps
+*.ncb
+*.opendb
+
 # ImGui user settings
 imgui.ini
 
@@ -54,6 +60,20 @@ imgui.ini
 # Generated files
 *.log
 *.tlog
+*.ilk
+*.meta
+*.iobj
+*.pdb
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
 
 # CMake
 CMakeCache.txt
@@ -77,3 +97,6 @@ _deps
 # OS files
 .DS_Store
 Thumbs.db
+
+# Claude Code files
+/.claude
