@@ -1,4 +1,3 @@
-// Application.cpp - Main application logic for OpenGL rendering and UI
 #include "Application.h"
 
 #include "Config.h"
@@ -21,6 +20,18 @@
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 
+// GLFW error callback to surface startup errors
+static void GLFWErrorCallback(int error, const char* description)
+{
+    std::cerr << "GLFW Error (" << error << "): " << description << std::endl;
+}
+
+// Framebuffer resize callback to update viewport
+static void FramebufferSizeCallback(GLFWwindow* /*window*/, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
 /**
  * @brief Constructs the OpenGLApp and initializes member variables.
  */
@@ -29,7 +40,9 @@ OpenGLApp::OpenGLApp()
     translationA = glm::vec3(-400.0f, 0.0f, 0.0f);
     translationB = glm::vec3(400.0f, 0.0f, 0.0f);
     colorValue = 0.0f;
-    colorIncrement = 0.05f;
+    colorSpeed = 0.25f;
+    colorDirection = 1.0f;
+    lastFrameTime = 0.0;
 }
 
 /**
@@ -51,6 +64,9 @@ bool OpenGLApp::Initialize()
     if (!InitializeImGui()) return false;
     if (!SetupScene()) return false;
 
+    // Initialize timing
+    lastFrameTime = glfwGetTime();
+
     return true;
 }
 
@@ -59,7 +75,7 @@ bool OpenGLApp::Initialize()
  */
 void OpenGLApp::Run()
 {
-    while (!glfwWindowShouldClose(window))
+    while (window && !glfwWindowShouldClose(window))
     {
         Update();
         Render();
@@ -75,6 +91,9 @@ void OpenGLApp::Run()
  */
 bool OpenGLApp::InitializeGLFW()
 {
+    // Register error callback early so we see failures
+    glfwSetErrorCallback(GLFWErrorCallback);
+
     if (!glfwInit())
     {
         std::cerr << "Failed to initialize GLFW" << std::endl;
@@ -95,6 +114,14 @@ bool OpenGLApp::InitializeGLFW()
 
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // VSync enabled
+
+    // Set initial viewport size and register framebuffer resize callback
+    int fbw, fbh;
+    glfwGetFramebufferSize(window, &fbw, &fbh);
+    glViewport(0, 0, fbw, fbh);
+    glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
+
+    glfwInitialized = true;
     return true;
 }
 
@@ -104,6 +131,8 @@ bool OpenGLApp::InitializeGLFW()
  */
 bool OpenGLApp::InitializeOpenGL()
 {
+    // Required for core profile to get proper function pointers
+    glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK)
     {
         std::cerr << "Failed to initialize GLEW" << std::endl;
@@ -115,6 +144,7 @@ bool OpenGLApp::InitializeOpenGL()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    openglInitialized = true;
     return true;
 }
 
@@ -140,6 +170,7 @@ bool OpenGLApp::InitializeImGui()
         return false;
     }
 
+    imguiInitialized = true;
     return true;
 }
 
@@ -187,10 +218,11 @@ bool OpenGLApp::SetupScene()
         -1.0f, 1.0f);
     view = glm::mat4(1.0f);
 
-    shader->Bind();
-    texture->Bind();
-    shader->SetUniform1i("u_Texture", 0);
+    if (shader) shader->Bind();
+    if (texture) texture->Bind();
+    if (shader) shader->SetUniform1i("u_Texture", 0);
 
+    sceneSetup = true;
     return true;
 }
 
@@ -199,11 +231,28 @@ bool OpenGLApp::SetupScene()
  */
 void OpenGLApp::Update()
 {
-    // Animate colorValue between 0.75 and 1.0
-    if (colorValue > 1.0f) colorIncrement = -0.001f;
-    else if (colorValue < 0.75f) colorIncrement = 0.01f;
+    if (!glfwInitialized)
+        return;
 
-    colorValue += colorIncrement;
+    double currentTime = glfwGetTime();
+    deltaTime = static_cast<float>(currentTime - lastFrameTime);
+    lastFrameTime = currentTime;
+
+    // Animate colorValue between 0.75 and 1.0 in a frame-rate independent way
+    const float minVal = 0.75f;
+    const float maxVal = 1.0f;
+
+    colorValue += colorDirection * colorSpeed * deltaTime;
+    if (colorValue > maxVal)
+    {
+        colorValue = maxVal;
+        colorDirection = -1.0f;
+    }
+    else if (colorValue < minVal)
+    {
+        colorValue = minVal;
+        colorDirection = 1.0f;
+    }
 }
 
 /**
@@ -211,24 +260,38 @@ void OpenGLApp::Update()
  */
 void OpenGLApp::Render()
 {
+    if (!renderer) return; // ensure resources exist
     renderer->Clear();
 
-    // Start ImGui frame
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
+    // Start ImGui frame if initialized
+    if (imguiInitialized)
+    {
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+    }
 
-    shader->Bind();
-    shader->SetUniform4f("u_Color", colorValue, 1.0f, 1.0f, 1.0f);
+    if (shader)
+    {
+        shader->Bind();
+        shader->SetUniform4f("u_Color", colorValue, 1.0f, 1.0f, 1.0f);
+    }
 
-    RenderQuad(translationA);
-    RenderQuad(translationB);
+    // Render quads only if required resources are available
+    if (va && ib && shader && renderer)
+    {
+        RenderQuad(translationA);
+        RenderQuad(translationB);
+    }
 
-    RenderUI();
+    if (imguiInitialized)
+    {
+        RenderUI();
 
-    // Render ImGui UI
-    ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        // Render ImGui UI
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
 }
 
 /**
@@ -237,6 +300,8 @@ void OpenGLApp::Render()
  */
 void OpenGLApp::RenderQuad(const glm::vec3& translation)
 {
+    if (!shader || !renderer || !va || !ib) return;
+
     glm::mat4 model = glm::translate(glm::mat4(1.0f), translation);
     glm::mat4 mvp = projection * view * model;
     shader->SetUniformMat4f("u_MVP", mvp);
@@ -249,6 +314,8 @@ void OpenGLApp::RenderQuad(const glm::vec3& translation)
  */
 void OpenGLApp::RenderUI()
 {
+    if (!imguiInitialized) return;
+
     ImGui::Begin("Controls");
 
     // Sliders for quad translations
@@ -267,14 +334,33 @@ void OpenGLApp::RenderUI()
  */
 void OpenGLApp::Cleanup()
 {
-    if (window)
+    // Shutdown ImGui if it was initialized
+    if (imguiInitialized)
     {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
+        imguiInitialized = false;
+    }
 
+    // Reset owned resources
+    renderer.reset();
+    va.reset();
+    vb.reset();
+    ib.reset();
+    shader.reset();
+    texture.reset();
+    sceneSetup = false;
+
+    if (window)
+    {
         glfwDestroyWindow(window);
-        glfwTerminate();
         window = nullptr;
+    }
+
+    if (glfwInitialized)
+    {
+        glfwTerminate();
+        glfwInitialized = false;
     }
 }
