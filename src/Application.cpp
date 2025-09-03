@@ -205,7 +205,7 @@ bool OpenGLApp::SetupScene()
         ib = std::make_unique<IndexBuffer>(indices, 6);
 
         shader = std::make_unique<Shader>("res/shaders/Basic.shader");
-        texture = std::make_unique<Texture>("res/textures/eula.png");
+        texture = std::make_unique<Texture>("res/textures/myimage.png");
         renderer = std::make_unique<Renderer>();
     }
     catch (const std::exception& e)
