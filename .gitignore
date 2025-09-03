@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
 # Build directories
 build/
 build-*/
@@ -53,7 +51,6 @@ StyleCopReport.xml
 *.ilk
 *.meta
 *.obj
-*.o
 *.iobj
 *.pch
 *.pdb
@@ -268,8 +265,9 @@ healthchecksdb
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
 
-# Ionide (cross platform F# VS Code tools) working folder
-.ionide/
+# OS files
+.DS_Store
+Thumbs.db
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
