@@ -141,5 +141,9 @@ _deps
 *.swo
 *~
 
-# Fody - auto-generated XML schema
-FodyWeavers.xsd
+# OS files
+.DS_Store
+Thumbs.db
+
+# Claude Code files
+.claude/
