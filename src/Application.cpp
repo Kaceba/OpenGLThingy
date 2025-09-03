@@ -43,6 +43,8 @@ OpenGLApp::OpenGLApp()
     colorSpeed = 0.25f;
     colorDirection = 1.0f;
     lastFrameTime = 0.0;
+    projection = glm::mat4(1.0f); // Identity matrix
+    view = glm::mat4(1.0f);       // Identity matrix
 }
 
 /**
