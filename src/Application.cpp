@@ -1,3 +1,8 @@
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4996) // Disable deprecation warnings for MSVC
+#endif
+
 #include "Application.h"
 
 #include "Config.h"
@@ -8,11 +13,13 @@
 #include "IndexBuffer.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "Cube.h"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #include <iostream>
+#include <string>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -45,6 +52,10 @@ OpenGLApp::OpenGLApp()
     lastFrameTime = 0.0;
     projection = glm::mat4(1.0f); // Identity matrix
     view = glm::mat4(1.0f);       // Identity matrix
+    projection3D = glm::mat4(1.0f);
+    view3D = glm::mat4(1.0f);
+    cubeRotationX = 0.0f;
+    cubeRotationY = 0.0f;
 }
 
 /**
@@ -145,6 +156,10 @@ bool OpenGLApp::InitializeOpenGL()
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    // Enable depth testing for 3D rendering
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
     openglInitialized = true;
     return true;
@@ -207,6 +222,10 @@ bool OpenGLApp::SetupScene()
         shader = std::make_unique<Shader>("res/shaders/Basic.shader");
         texture = std::make_unique<Texture>("res/textures/myimage.png");
         renderer = std::make_unique<Renderer>();
+        
+        // Initialize 3D cube resources
+        cube = std::make_unique<Cube>(1.0f);
+        cubeShader = std::make_unique<Shader>("res/shaders/Cube.shader");
     }
     catch (const std::exception& e)
     {
@@ -219,6 +238,14 @@ bool OpenGLApp::SetupScene()
         0.0f, static_cast<float>(WINDOW_HEIGHT),
         -1.0f, 1.0f);
     view = glm::mat4(1.0f);
+    
+    // Set up 3D projection and view matrices
+    projection3D = glm::perspective(glm::radians(45.0f), 
+        static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT),
+        0.1f, 100.0f);
+    view3D = glm::lookAt(glm::vec3(3.0f, 3.0f, 3.0f),  // Camera position
+                         glm::vec3(0.0f, 0.0f, 0.0f),   // Look at origin
+                         glm::vec3(0.0f, 1.0f, 0.0f));  // Up vector
 
     if (shader) shader->Bind();
     if (texture) texture->Bind();
@@ -255,6 +282,17 @@ void OpenGLApp::Update()
         colorValue = minVal;
         colorDirection = 1.0f;
     }
+    
+    // Update cube rotation if cube is visible
+    if (showCube)
+    {
+        cubeRotationX += cubeRotationSpeed * deltaTime;
+        cubeRotationY += cubeRotationSpeed * 0.7f * deltaTime; // Slightly different speed for Y
+        
+        // Keep rotations within 0-360 degrees for cleaner values
+        if (cubeRotationX >= 360.0f) cubeRotationX -= 360.0f;
+        if (cubeRotationY >= 360.0f) cubeRotationY -= 360.0f;
+    }
 }
 
 /**
@@ -273,17 +311,26 @@ void OpenGLApp::Render()
         ImGui::NewFrame();
     }
 
-    if (shader)
+    // Render cube first (3D content with depth testing)
+    if (showCube && cube && cubeShader && renderer)
     {
-        shader->Bind();
-        shader->SetUniform4f("u_Color", colorValue, 1.0f, 1.0f, 1.0f);
+        RenderCube();
     }
-
-    // Render quads only if required resources are available and showQuads is true
+    
+    // Render 2D quads with depth testing disabled
     if (showQuads && va && ib && shader && renderer)
     {
+        // Temporarily disable depth testing for 2D content
+        glDisable(GL_DEPTH_TEST);
+        
+        shader->Bind();
+        shader->SetUniform4f("u_Color", colorValue, 1.0f, 1.0f, 1.0f);
+        
         RenderQuad(translationA);
         RenderQuad(translationB);
+        
+        // Re-enable depth testing
+        glEnable(GL_DEPTH_TEST);
     }
 
     if (imguiInitialized)
@@ -312,32 +359,110 @@ void OpenGLApp::RenderQuad(const glm::vec3& translation)
 }
 
 /**
+ * @brief Renders the rotating 3D cube.
+ * 
+ * Sets up model matrix with rotation, binds cube shader with
+ * appropriate uniforms for lighting, and renders the cube.
+ */
+void OpenGLApp::RenderCube()
+{
+    if (!cube || !cubeShader || !renderer) return;
+    
+    cubeShader->Bind();
+    
+    // Create model matrix with rotation
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::rotate(model, glm::radians(cubeRotationX), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(cubeRotationY), glm::vec3(0.0f, 1.0f, 0.0f));
+    
+    // Set shader uniforms
+    glm::mat4 mvp = projection3D * view3D * model;
+    cubeShader->SetUniformMat4f("u_MVP", mvp);
+    cubeShader->SetUniformMat4f("u_Model", model);
+    cubeShader->SetUniform3f("u_Color", 0.8f, 0.6f, 0.2f); // Orange-ish color
+    cubeShader->SetUniform3f("u_LightPos", 2.0f, 2.0f, 2.0f);
+    cubeShader->SetUniform3f("u_ViewPos", 3.0f, 3.0f, 3.0f);
+    cubeShader->SetUniformBool("u_UseTexture", cubeUseTexture);
+    
+    // Bind texture if using texture mode
+    if (cubeUseTexture && texture) {
+        texture->Bind();
+        cubeShader->SetUniform1i("u_Texture", 0);
+    }
+    
+    cube->Render(*renderer, *cubeShader, model, view3D, projection3D);
+}
+
+/**
  * @brief Renders the ImGui UI controls.
  */
 void OpenGLApp::RenderUI()
 {
     if (!imguiInitialized) return;
 
-    ImGui::Begin("Controls");
+    // Set fixed window size and position - increased width to prevent text cropping
+    ImGui::SetNextWindowSize(ImVec2(380, 520), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
+    
+    ImGui::Begin("OpenGL Renderer Controls", nullptr, 
+                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+    
+    // Set column width to ensure proper text layout
+    ImGui::PushItemWidth(-120.0f); // Leave 120px for labels
 
-    // Checkbox to toggle scene mode
-    ImGui::Checkbox("Show Quads", &showQuads);
+    // === SCENE OBJECTS ===
+    ImGui::SeparatorText("Scene Objects");
+    ImGui::Checkbox("Show 2D Quads", &showQuads);
+    ImGui::Checkbox("Show 3D Cube", &showCube);
+    
+    ImGui::Spacing();
 
-    // Sliders for quad translations
-    ImGui::SliderFloat2("Translation 1", &translationA.x, -800.0f, 800.0f);
-    ImGui::SliderFloat2("Translation 2", &translationB.x, -800.0f, 800.0f);
+    // === 2D QUAD SETTINGS ===
+    if (showQuads)
+    {
+        ImGui::SeparatorText("2D Quad Settings");
+        ImGui::SliderFloat2("Quad 1 Pos", &translationA.x, -800.0f, 800.0f);
+        ImGui::SliderFloat2("Quad 2 Pos", &translationB.x, -800.0f, 800.0f);
+        ImGui::Spacing();
+    }
+    
+    // === 3D CUBE SETTINGS ===
+    if (showCube)
+    {
+        ImGui::SeparatorText("3D Cube Settings");
+        ImGui::SliderFloat("Rotation Speed", &cubeRotationSpeed, 0.0f, 180.0f, "%.0f°/sec");
+        ImGui::Checkbox("Use Texture", &cubeUseTexture);
+        ImGui::Text("Rotation: X=%.0f° Y=%.0f°", cubeRotationX, cubeRotationY);
+        ImGui::Spacing();
+    }
 
+    // === PERFORMANCE INFO ===
+    ImGui::SeparatorText("Performance");
     ImGuiIO& io = ImGui::GetIO();
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-        1000.0f / io.Framerate, io.Framerate);
-
-    // Quit button
-    if (ImGui::Button("Quit"))
+    ImGui::Text("FPS: %.1f (%.2fms/frame)", io.Framerate, 1000.0f / io.Framerate);
+    
+    // Get OpenGL version and truncate if too long (safe C++ version)
+    const char* glVersion = (const char*)glGetString(GL_VERSION);
+    if (glVersion && strlen(glVersion) > 30) {
+        std::string versionStr(glVersion);
+        versionStr = versionStr.substr(0, 30) + "...";
+        ImGui::Text("OpenGL: %s", versionStr.c_str());
+    } else {
+        ImGui::Text("OpenGL: %s", glVersion ? glVersion : "Unknown");
+    }
+    
+    ImGui::Spacing();
+    ImGui::Separator();
+    
+    // === APPLICATION CONTROLS ===
+    ImGui::Spacing();
+    if (ImGui::Button("Quit Application", ImVec2(-1, 0)))
     {
         if (window)
             glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
 
+    ImGui::PopItemWidth(); // Restore default item width
     ImGui::End();
 }
 
@@ -362,6 +487,11 @@ void OpenGLApp::Cleanup()
     ib.reset();
     shader.reset();
     texture.reset();
+    
+    // Reset 3D cube resources
+    cube.reset();
+    cubeShader.reset();
+    
     sceneSetup = false;
 
     if (window)
@@ -376,3 +506,7 @@ void OpenGLApp::Cleanup()
         glfwInitialized = false;
     }
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop) // Restore warning settings
+#endif
