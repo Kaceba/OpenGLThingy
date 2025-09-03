@@ -44,11 +44,13 @@ private:
     // colorSpeed is units per second, colorDirection is ±1
     float colorSpeed = 0.25f;
     float colorDirection = 1.0f;
-
     glm::vec3 translationA;
     glm::vec3 translationB;
     glm::mat4 projection;
     glm::mat4 view;
+
+    // Scene mode: show quads or clean scene
+    bool showQuads = true;
 
     // Initialization flags to make Cleanup robust
     bool glfwInitialized = false;

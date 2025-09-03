@@ -279,8 +279,8 @@ void OpenGLApp::Render()
         shader->SetUniform4f("u_Color", colorValue, 1.0f, 1.0f, 1.0f);
     }
 
-    // Render quads only if required resources are available
-    if (va && ib && shader && renderer)
+    // Render quads only if required resources are available and showQuads is true
+    if (showQuads && va && ib && shader && renderer)
     {
         RenderQuad(translationA);
         RenderQuad(translationB);
@@ -319,6 +319,9 @@ void OpenGLApp::RenderUI()
     if (!imguiInitialized) return;
 
     ImGui::Begin("Controls");
+
+    // Checkbox to toggle scene mode
+    ImGui::Checkbox("Show Quads", &showQuads);
 
     // Sliders for quad translations
     ImGui::SliderFloat2("Translation 1", &translationA.x, -800.0f, 800.0f);
