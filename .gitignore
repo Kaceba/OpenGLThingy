@@ -99,4 +99,4 @@ _deps
 Thumbs.db
 
 # Claude Code files
-/.claude
+.claude/
