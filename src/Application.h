@@ -39,10 +39,24 @@ private:
     std::unique_ptr<Shader> shader;
     std::unique_ptr<Texture> texture;
 
+    // Animation state
     float colorValue = 0.0f;
-    float colorIncrement = 0.05f;
+    // colorSpeed is units per second, colorDirection is ±1
+    float colorSpeed = 0.25f;
+    float colorDirection = 1.0f;
+
     glm::vec3 translationA;
     glm::vec3 translationB;
     glm::mat4 projection;
     glm::mat4 view;
+
+    // Initialization flags to make Cleanup robust
+    bool glfwInitialized = false;
+    bool openglInitialized = false;
+    bool imguiInitialized = false;
+    bool sceneSetup = false;
+
+    // Timing for frame-rate independent updates
+    double lastFrameTime = 0.0; // seconds
+    float deltaTime = 0.0f;     // seconds
 };
