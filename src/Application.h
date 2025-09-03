@@ -10,6 +10,7 @@ class VertexBuffer;
 class IndexBuffer;
 class Shader;
 class Texture;
+class Cube;
 
 class OpenGLApp
 {
@@ -28,6 +29,7 @@ private:
     void Update();
     void Render();
     void RenderQuad(const glm::vec3& translation);
+    void RenderCube();
     void RenderUI();
     void Cleanup();
 
@@ -38,19 +40,34 @@ private:
     std::unique_ptr<IndexBuffer> ib;
     std::unique_ptr<Shader> shader;
     std::unique_ptr<Texture> texture;
+    
+    // 3D Cube resources
+    std::unique_ptr<Cube> cube;
+    std::unique_ptr<Shader> cubeShader;
 
     // Animation state
     float colorValue = 0.0f;
-    // colorSpeed is units per second, colorDirection is ±1
+    // colorSpeed is units per second, colorDirection is ï¿½1
     float colorSpeed = 0.25f;
     float colorDirection = 1.0f;
     glm::vec3 translationA;
     glm::vec3 translationB;
     glm::mat4 projection;
     glm::mat4 view;
+    
+    // 3D projection and view matrices
+    glm::mat4 projection3D;
+    glm::mat4 view3D;
 
     // Scene mode: show quads or clean scene
     bool showQuads = true;
+    bool showCube = false;
+    bool cubeUseTexture = false;
+    
+    // Cube rotation state
+    float cubeRotationX = 0.0f;
+    float cubeRotationY = 0.0f;
+    float cubeRotationSpeed = 45.0f; // degrees per second
 
     // Initialization flags to make Cleanup robust
     bool glfwInitialized = false;

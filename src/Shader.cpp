@@ -67,10 +67,17 @@ unsigned int Shader::CompileShader(unsigned int type, const std::string& source)
 	{
 		int lenght;
 		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &lenght);
+#ifdef _WIN32
 		char* message = (char*)_malloca(lenght * sizeof(char));
+#else
+		char* message = (char*)malloc(lenght * sizeof(char));
+#endif
 		glGetShaderInfoLog(id, lenght, &lenght, message);
 		std::cout << "Failed to compile " << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << " shader" << std::endl;
 		std::cout << message << std::endl;
+#ifndef _WIN32
+		free(message);
+#endif
 		glDeleteShader(id);
 		return 0;
 	}
@@ -105,27 +112,37 @@ void Shader::Unbind() const
 	GLCall(glUseProgram(0));
 }
 
-void Shader::SetUniform1i(const std::string& name, int value)
+void Shader::SetUniform1i(const std::string& name, int value) const
 {
 	GLCall(glUniform1i(GetUniformLocation(name), value));
 }
 
-void Shader::SetUniform1f(const std::string& name, float value)
+void Shader::SetUniform1f(const std::string& name, float value) const
 {
 	GLCall(glUniform1f(GetUniformLocation(name), value));
 }
 
-void Shader::SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3)
+void Shader::SetUniform3f(const std::string& name, float v0, float v1, float v2) const
+{
+	GLCall(glUniform3f(GetUniformLocation(name), v0, v1, v2));
+}
+
+void Shader::SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3) const
 {
 	GLCall(glUniform4f(GetUniformLocation(name), v0, v1, v2, v3));
 }
 
-void Shader::SetUniformMat4f(const std::string& name, const glm::mat4& matrix)
+void Shader::SetUniformMat4f(const std::string& name, const glm::mat4& matrix) const
 {
 	GLCall(glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &matrix[0][0]));
 }
 
-int Shader::GetUniformLocation(const std::string& name)
+void Shader::SetUniformBool(const std::string& name, bool value) const
+{
+	GLCall(glUniform1i(GetUniformLocation(name), value ? 1 : 0));
+}
+
+int Shader::GetUniformLocation(const std::string& name) const
 {
 	if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())
 		return m_UniformLocationCache[name];
