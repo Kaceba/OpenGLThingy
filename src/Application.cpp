@@ -1,3 +1,4 @@
+// Application.cpp - Main application logic for OpenGL rendering and UI
 #include "Application.h"
 
 #include "Config.h"
@@ -20,7 +21,9 @@
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 
-// Constructor
+/**
+ * @brief Constructs the OpenGLApp and initializes member variables.
+ */
 OpenGLApp::OpenGLApp()
 {
     translationA = glm::vec3(-400.0f, 0.0f, 0.0f);
@@ -29,12 +32,18 @@ OpenGLApp::OpenGLApp()
     colorIncrement = 0.05f;
 }
 
-// Destructor
+/**
+ * @brief Destructor. Cleans up resources.
+ */
 OpenGLApp::~OpenGLApp()
 {
     Cleanup();
 }
 
+/**
+ * @brief Initializes the application (GLFW, OpenGL, ImGui, scene).
+ * @return true if successful, false otherwise.
+ */
 bool OpenGLApp::Initialize()
 {
     if (!InitializeGLFW()) return false;
@@ -45,6 +54,9 @@ bool OpenGLApp::Initialize()
     return true;
 }
 
+/**
+ * @brief Main loop. Updates and renders until window is closed.
+ */
 void OpenGLApp::Run()
 {
     while (!glfwWindowShouldClose(window))
@@ -57,6 +69,10 @@ void OpenGLApp::Run()
     }
 }
 
+/**
+ * @brief Initializes GLFW and creates the window/context.
+ * @return true if successful, false otherwise.
+ */
 bool OpenGLApp::InitializeGLFW()
 {
     if (!glfwInit())
@@ -82,6 +98,10 @@ bool OpenGLApp::InitializeGLFW()
     return true;
 }
 
+/**
+ * @brief Initializes GLEW and OpenGL state.
+ * @return true if successful, false otherwise.
+ */
 bool OpenGLApp::InitializeOpenGL()
 {
     if (glewInit() != GLEW_OK)
@@ -98,6 +118,10 @@ bool OpenGLApp::InitializeOpenGL()
     return true;
 }
 
+/**
+ * @brief Initializes ImGui context and sets up bindings.
+ * @return true if successful, false otherwise.
+ */
 bool OpenGLApp::InitializeImGui()
 {
     IMGUI_CHECKVERSION();
@@ -107,6 +131,7 @@ bool OpenGLApp::InitializeImGui()
 
     ImGui::StyleColorsDark();
 
+    // GLSL version string for ImGui OpenGL backend
     const char* glsl_version = "#version 330";
     if (!ImGui_ImplGlfw_InitForOpenGL(window, true) ||
         !ImGui_ImplOpenGL3_Init(glsl_version))
@@ -118,8 +143,13 @@ bool OpenGLApp::InitializeImGui()
     return true;
 }
 
+/**
+ * @brief Sets up the scene: geometry, buffers, shader, texture, renderer.
+ * @return true if successful, false otherwise.
+ */
 bool OpenGLApp::SetupScene()
 {
+    // Vertex positions and texture coordinates for a quad
     float positions[] = {
         600.0f, QUAD_Y_POS, 0.0f, 0.0f,
         600.0f + QUAD_SIZE, QUAD_Y_POS, 1.0f, 0.0f,
@@ -151,7 +181,7 @@ bool OpenGLApp::SetupScene()
         return false;
     }
 
-    // Projection and view matrices
+    // Set up projection and view matrices
     projection = glm::ortho(0.0f, static_cast<float>(WINDOW_WIDTH),
         0.0f, static_cast<float>(WINDOW_HEIGHT),
         -1.0f, 1.0f);
@@ -164,18 +194,26 @@ bool OpenGLApp::SetupScene()
     return true;
 }
 
+/**
+ * @brief Updates application state (color animation).
+ */
 void OpenGLApp::Update()
 {
+    // Animate colorValue between 0.75 and 1.0
     if (colorValue > 1.0f) colorIncrement = -0.001f;
     else if (colorValue < 0.75f) colorIncrement = 0.01f;
 
     colorValue += colorIncrement;
 }
 
+/**
+ * @brief Renders the scene and UI.
+ */
 void OpenGLApp::Render()
 {
     renderer->Clear();
 
+    // Start ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
@@ -188,10 +226,15 @@ void OpenGLApp::Render()
 
     RenderUI();
 
+    // Render ImGui UI
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
+/**
+ * @brief Renders a quad at the given translation.
+ * @param translation The translation vector for the quad.
+ */
 void OpenGLApp::RenderQuad(const glm::vec3& translation)
 {
     glm::mat4 model = glm::translate(glm::mat4(1.0f), translation);
@@ -201,10 +244,14 @@ void OpenGLApp::RenderQuad(const glm::vec3& translation)
     renderer->Draw(*va, *ib, *shader);
 }
 
+/**
+ * @brief Renders the ImGui UI controls.
+ */
 void OpenGLApp::RenderUI()
 {
     ImGui::Begin("Controls");
 
+    // Sliders for quad translations
     ImGui::SliderFloat2("Translation 1", &translationA.x, -800.0f, 800.0f);
     ImGui::SliderFloat2("Translation 2", &translationB.x, -800.0f, 800.0f);
 
@@ -215,6 +262,9 @@ void OpenGLApp::RenderUI()
     ImGui::End();
 }
 
+/**
+ * @brief Cleans up resources and shuts down ImGui and GLFW.
+ */
 void OpenGLApp::Cleanup()
 {
     if (window)
