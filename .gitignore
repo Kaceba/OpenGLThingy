@@ -9,21 +9,82 @@ out/
 
 # Visual Studio files
 .vs/
-*.vcxproj.user
-*.vcxproj.filters
-*.sln.docstates
-*.suo
-*.opensdf
-*.sdf
-*.cachefile
-*.VC.db
-*.VC.opendb
+# Uncomment if you have tasks that create the project's static files in wwwroot
+#wwwroot/
+
+# Visual Studio 2017 auto generated files
+Generated\ Files/
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NUnit
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+
+# Build Results of an ATL Project
+[Dd]ebugPS/
+[Rr]eleasePS/
+dlldata.c
+
+# Benchmark Results
+BenchmarkDotNet.Artifacts/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# StyleCop
+StyleCopReport.xml
+
+# Files built by Visual Studio
+*_i.c
+*_p.c
+*_h.h
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.pch
+*.pdb
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*_wpftmp.csproj
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+# Chutzpah Test files
+_Chutzpah*
 
 # Visual C++ cache files
 ipch/
 *.aps
 *.ncb
 *.opendb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.opendb
 
 # ImGui user settings
 imgui.ini
@@ -60,20 +121,6 @@ imgui.ini
 # Generated files
 *.log
 *.tlog
-*.ilk
-*.meta
-*.iobj
-*.pdb
-*.ipdb
-*.pgc
-*.pgd
-*.rsp
-*.sbr
-*.tlb
-*.tli
-*.tlh
-*.tmp
-*.tmp_proj
 
 # CMake
 CMakeCache.txt
@@ -94,9 +141,5 @@ _deps
 *.swo
 *~
 
-# OS files
-.DS_Store
-Thumbs.db
-
-# Claude Code files
-/.claude
+# Fody - auto-generated XML schema
+FodyWeavers.xsd
