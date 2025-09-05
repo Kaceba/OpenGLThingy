@@ -120,7 +120,7 @@ After building, the executable will be in the `build/` directory:
 
 The application automatically copies required resources (shaders, textures) to the build directory.
 
-## Why We Do What We Do
+## Reasons for the implementations
 
 ### Cross-Platform Design
 - **CMake Build System**: Provides consistent builds across different platforms and toolchains
