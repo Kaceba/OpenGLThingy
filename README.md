@@ -2,6 +2,8 @@
 
 A cross-platform OpenGL application demonstrating modern OpenGL rendering techniques with interactive 3D graphics and GUI controls.
 
+https://github.com/user-attachments/assets/6f912ff5-c5fe-49a4-8147-b25e15b3b1e3
+
 ## What This Program Does
 
 OpenGLThingy is an educational OpenGL application that renders animated 3D cubes with the following features:
