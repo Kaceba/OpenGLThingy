@@ -313,17 +313,6 @@ ldd build/OpenGLThingy
 - **GPU profiling**: Add timing queries for bottleneck identification
 - **Multi-threading**: Separate render and update threads
 
-## Contributing
-
-When contributing:
-1. Follow the existing code style and organization
-2. Test builds on both Windows and Linux when possible
-3. Update documentation for any new features
-4. Ensure all OpenGL objects are properly cleaned up
-5. Consider addressing items from the "Known Issues" section above
-6. Add appropriate error handling for new features
-7. Update build scripts if adding new dependencies
-
 ## License
 
-This project maintains the same license as the original OpenGLThingy project.
+Do whatever you want with it, it's not like i own anything in this :)
