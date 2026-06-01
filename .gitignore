@@ -9,6 +9,8 @@ out/
 
 # Visual Studio files
 .vs/
+*.sln
+*.vcxproj
 *.vcxproj.user
 *.vcxproj.filters
 *.sln.docstates
