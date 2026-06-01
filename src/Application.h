@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <glm/glm.hpp>  // Needed for glm::vec3 and glm::mat4
+#include <glm/glm.hpp>
 
 struct GLFWwindow;
 class Renderer;
@@ -33,49 +33,39 @@ private:
     void RenderUI();
     void Cleanup();
 
-    GLFWwindow* window = nullptr;  // Pointer is fine
+    GLFWwindow* window = nullptr;
     std::unique_ptr<Renderer> renderer;
     std::unique_ptr<VertexArray> va;
     std::unique_ptr<VertexBuffer> vb;
     std::unique_ptr<IndexBuffer> ib;
     std::unique_ptr<Shader> shader;
     std::unique_ptr<Texture> texture;
-    
-    // 3D Cube resources
+
     std::unique_ptr<Cube> cube;
     std::unique_ptr<Shader> cubeShader;
 
-    // Animation state
     float colorValue = 0.0f;
-    // colorSpeed is units per second, colorDirection is �1
     float colorSpeed = 0.25f;
     float colorDirection = 1.0f;
-    glm::vec3 translationA;
-    glm::vec3 translationB;
-    glm::mat4 projection;
-    glm::mat4 view;
-    
-    // 3D projection and view matrices
-    glm::mat4 projection3D;
-    glm::mat4 view3D;
+    glm::vec3 translationA{-400.0f, 0.0f, 0.0f};
+    glm::vec3 translationB{ 400.0f, 0.0f, 0.0f};
+    glm::mat4 projection{1.0f};
+    glm::mat4 view{1.0f};
 
-    // Scene mode: show quads or clean scene
+    glm::mat4 projection3D{1.0f};
+    glm::mat4 view3D{1.0f};
+
     bool showQuads = true;
     bool showCube = false;
     bool cubeUseTexture = false;
-    
-    // Cube rotation state
+
     float cubeRotationX = 0.0f;
     float cubeRotationY = 0.0f;
     float cubeRotationSpeed = 45.0f; // degrees per second
 
-    // Initialization flags to make Cleanup robust
     bool glfwInitialized = false;
-    bool openglInitialized = false;
     bool imguiInitialized = false;
-    bool sceneSetup = false;
 
-    // Timing for frame-rate independent updates
-    double lastFrameTime = 0.0; // seconds
-    float deltaTime = 0.0f;     // seconds
+    double lastFrameTime = 0.0;
+    float deltaTime = 0.0f;
 };
