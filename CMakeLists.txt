@@ -84,7 +84,7 @@ set(SOURCES
     src/IndexBuffer.cpp
     src/Renderer.cpp
     src/Shader.cpp
-    src/texture.cpp
+    src/Texture.cpp
     src/VertexArray.cpp
     src/VertexBuffer.cpp
     src/tests/TestClearColor.cpp

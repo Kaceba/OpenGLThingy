@@ -142,9 +142,6 @@ _deps
 .DS_Store
 Thumbs.db
 
-# Claude Code files
-.claude/
-
 # Including strong name files can present a security risk
 #*.snk
 
