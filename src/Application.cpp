@@ -107,9 +107,15 @@ bool OpenGLApp::InitializeOpenGL()
 {
     // Required for core profile to expose modern GL function pointers
     glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK)
+    if (GLenum err = glewInit(); err != GLEW_OK && err != GLEW_ERROR_NO_GLX_DISPLAY)
     {
-        std::cerr << "Failed to initialize GLEW" << std::endl;
+        // GLEW_ERROR_NO_GLX_DISPLAY is harmless on Wayland/EGL — GLEW
+        // queries GLX state even when the context isn't GLX, but the GL
+        // function pointers still load correctly.
+        // TODO(branch): replace GLEW with GLAD to remove the GLX poke
+        // entirely. GLAD is a generated header-only loader, no system
+        // dep, works identically on Wayland/X11/EGL/macOS/Windows.
+        std::cerr << "Failed to initialize GLEW: " << glewGetErrorString(err) << std::endl;
         return false;
     }
 
