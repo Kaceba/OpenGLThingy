@@ -1,5 +1,5 @@
 @echo off
-REM Cross-platform build script for OpenGLThingy (Windows)
+REM Build script for OpenGLThingy (Windows)
 
 REM Create build directory
 if not exist build mkdir build

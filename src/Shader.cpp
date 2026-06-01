@@ -22,6 +22,11 @@ Shader::~Shader()
 ShaderProgramSource Shader::ParseShader(const std::string& filepath)
 {
 	std::ifstream stream(filepath);
+	if (!stream)
+	{
+		std::cerr << "Shader: could not open '" << filepath << "' (cwd-relative)" << std::endl;
+		return { "", "" };
+	}
 
 	enum class ShaderType
 	{
