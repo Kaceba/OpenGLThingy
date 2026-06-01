@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Cross-platform build script for OpenGLThingy
 
