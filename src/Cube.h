@@ -9,22 +9,17 @@ class IndexBuffer;
 class Shader;
 class Renderer;
 
-class Cube {
+class Cube
+{
 public:
-    explicit Cube(float size = 2.0f);
-    ~Cube() = default;
+	explicit Cube(float size = 2.0f);
 
-    Cube(const Cube&) = delete;
-    Cube& operator=(const Cube&) = delete;
-    Cube(Cube&&) = default;
-    Cube& operator=(Cube&&) = default;
-
-    void Render(const Renderer& renderer, const Shader& shader,
-                const glm::mat4& model, const glm::mat4& view,
-                const glm::mat4& projection) const;
+	void Render(const Renderer& renderer, const Shader& shader,
+				const glm::mat4& model, const glm::mat4& view,
+				const glm::mat4& projection) const;
 
 private:
-    std::unique_ptr<VertexArray> m_vertexArray;
-    std::unique_ptr<VertexBuffer> m_vertexBuffer;
-    std::unique_ptr<IndexBuffer> m_indexBuffer;
+	std::unique_ptr<VertexArray> m_VertexArray;
+	std::unique_ptr<VertexBuffer> m_VertexBuffer;
+	std::unique_ptr<IndexBuffer> m_IndexBuffer;
 };
