@@ -2,14 +2,14 @@
 #include <iostream>
 
 int main() {
-    OpenGLApp app;
+	OpenGLApp app;
 
-    if (!app.Initialize()) {
-        std::cerr << "Failed to initialize application" << std::endl;
-        return -1;
-    }
+	if (!app.Initialize()) {
+		std::cerr << "Failed to initialize application" << std::endl;
+		return -1;
+	}
 
-    app.Run();
+	app.Run();
 
-    return 0;
+	return 0;
 }

@@ -35,9 +35,9 @@ private:
 
 	GLFWwindow* m_Window = nullptr;
 	std::unique_ptr<Renderer> m_Renderer;
-	std::unique_ptr<VertexArray> m_VA;
-	std::unique_ptr<VertexBuffer> m_VB;
-	std::unique_ptr<IndexBuffer> m_IB;
+	std::unique_ptr<VertexArray> m_VertexArray;
+	std::unique_ptr<VertexBuffer> m_VertexBuffer;
+	std::unique_ptr<IndexBuffer> m_IndexBuffer;
 	std::unique_ptr<Shader> m_Shader;
 	std::unique_ptr<Texture> m_Texture;
 
@@ -50,7 +50,6 @@ private:
 	glm::vec3 m_TranslationA{-400.0f, 0.0f, 0.0f};
 	glm::vec3 m_TranslationB{ 400.0f, 0.0f, 0.0f};
 	glm::mat4 m_Projection{1.0f};
-	glm::mat4 m_View{1.0f};
 
 	glm::mat4 m_Projection3D{1.0f};
 	glm::mat4 m_View3D{1.0f};
@@ -67,5 +66,4 @@ private:
 	bool m_ImguiInitialized = false;
 
 	double m_LastFrameTime = 0.0;
-	float m_DeltaTime = 0.0f;
 };

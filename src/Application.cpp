@@ -156,15 +156,15 @@ bool OpenGLApp::SetupScene()
 
 	try
 	{
-		m_VA = std::make_unique<VertexArray>();
-		m_VB = std::make_unique<VertexBuffer>(positions, 4 * 4 * sizeof(float));
+		m_VertexArray = std::make_unique<VertexArray>();
+		m_VertexBuffer = std::make_unique<VertexBuffer>(positions, 4 * 4 * sizeof(float));
 
 		VertexBufferLayout layout;
 		layout.Push<float>(2);
 		layout.Push<float>(2);
-		m_VA->AddBuffer(*m_VB, layout);
+		m_VertexArray->AddBuffer(*m_VertexBuffer, layout);
 
-		m_IB = std::make_unique<IndexBuffer>(indices, 6);
+		m_IndexBuffer = std::make_unique<IndexBuffer>(indices, 6);
 
 		m_Shader = std::make_unique<Shader>("res/shaders/Basic.shader");
 		m_Texture = std::make_unique<Texture>("res/textures/myimage.png");
@@ -182,7 +182,6 @@ bool OpenGLApp::SetupScene()
 	m_Projection = glm::ortho(0.0f, static_cast<float>(WINDOW_WIDTH),
 		0.0f, static_cast<float>(WINDOW_HEIGHT),
 		-1.0f, 1.0f);
-	m_View = glm::mat4(1.0f);
 
 	m_Projection3D = glm::perspective(glm::radians(45.0f),
 		static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT),
@@ -201,13 +200,13 @@ bool OpenGLApp::SetupScene()
 void OpenGLApp::Update()
 {
 	double currentTime = glfwGetTime();
-	m_DeltaTime = static_cast<float>(currentTime - m_LastFrameTime);
+	float deltaTime = static_cast<float>(currentTime - m_LastFrameTime);
 	m_LastFrameTime = currentTime;
 
 	const float minVal = 0.75f;
 	const float maxVal = 1.0f;
 
-	m_ColorValue += m_ColorDirection * m_ColorSpeed * m_DeltaTime;
+	m_ColorValue += m_ColorDirection * m_ColorSpeed * deltaTime;
 	if (m_ColorValue > maxVal)
 	{
 		m_ColorValue = maxVal;
@@ -221,8 +220,8 @@ void OpenGLApp::Update()
 
 	if (m_ShowCube)
 	{
-		m_CubeRotationX += m_CubeRotationSpeed * m_DeltaTime;
-		m_CubeRotationY += m_CubeRotationSpeed * 0.7f * m_DeltaTime;
+		m_CubeRotationX += m_CubeRotationSpeed * deltaTime;
+		m_CubeRotationY += m_CubeRotationSpeed * 0.7f * deltaTime;
 
 		if (m_CubeRotationX >= 360.0f) m_CubeRotationX -= 360.0f;
 		if (m_CubeRotationY >= 360.0f) m_CubeRotationY -= 360.0f;
@@ -264,10 +263,10 @@ void OpenGLApp::Render()
 void OpenGLApp::RenderQuad(const glm::vec3& translation)
 {
 	glm::mat4 model = glm::translate(glm::mat4(1.0f), translation);
-	glm::mat4 mvp = m_Projection * m_View * model;
+	glm::mat4 mvp = m_Projection * model;
 	m_Shader->SetUniformMat4f("u_MVP", mvp);
 
-	m_Renderer->Draw(*m_VA, *m_IB, *m_Shader);
+	m_Renderer->Draw(*m_VertexArray, *m_IndexBuffer, *m_Shader);
 }
 
 void OpenGLApp::RenderCube()
@@ -278,8 +277,6 @@ void OpenGLApp::RenderCube()
 	model = glm::rotate(model, glm::radians(m_CubeRotationX), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(m_CubeRotationY), glm::vec3(0.0f, 1.0f, 0.0f));
 
-	glm::mat4 mvp = m_Projection3D * m_View3D * model;
-	m_CubeShader->SetUniformMat4f("u_MVP", mvp);
 	m_CubeShader->SetUniformMat4f("u_Model", model);
 	m_CubeShader->SetUniform3f("u_Color", 0.8f, 0.6f, 0.2f);
 	m_CubeShader->SetUniform3f("u_LightPos", 2.0f, 2.0f, 2.0f);
@@ -369,9 +366,9 @@ void OpenGLApp::Cleanup()
 	}
 
 	m_Renderer.reset();
-	m_VA.reset();
-	m_VB.reset();
-	m_IB.reset();
+	m_VertexArray.reset();
+	m_VertexBuffer.reset();
+	m_IndexBuffer.reset();
 	m_Shader.reset();
 	m_Texture.reset();
 
